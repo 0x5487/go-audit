@@ -1,6 +1,8 @@
 package audit
 
-import "time"
+import (
+	"time"
+)
 
 var (
 	_auditer Auditer
@@ -25,8 +27,22 @@ type Event struct {
 	CreatedAt *time.Time `db:"created_at"`
 }
 
+type ReadLogOption struct {
+	Namespace string
+	TargetID  string
+	Action    string
+	Actor     string
+	State     int
+	StartTime *time.Time
+	EndTime   *time.Time
+	Skip      uint
+	PerPage   uint
+}
+
 type Auditer interface {
 	Log(event *Event) error
+	ReadLog(option *ReadLogOption) ([]*Event, error)
+	TotalCount(option *ReadLogOption) (int, error)
 }
 
 type DefaultAudit struct {
@@ -36,6 +52,20 @@ func newDefaultAudit() *DefaultAudit {
 	return &DefaultAudit{}
 }
 
+func NewReadLogOption() *ReadLogOption {
+	option := ReadLogOption{}
+	option.State = -1
+	return &option
+}
+
 func (da *DefaultAudit) Log(event *Event) error {
 	return nil
+}
+
+func (da *DefaultAudit) ReadLog(option *ReadLogOption) ([]*Event, error) {
+	return nil, nil
+}
+
+func (da *DefaultAudit) TotalCount(option *ReadLogOption) (int, error) {
+	return 0, nil
 }
