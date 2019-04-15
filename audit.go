@@ -23,7 +23,8 @@ type Event struct {
 	Action    string     `db:"action"`
 	Actor     string     `db:"actor"`
 	Message   string     `db:"message"`
-	State     uint       `db:"state"`
+	State     int        `db:"state"`
+	ClientIP  string     `db:"client_ip"`
 	CreatedAt *time.Time `db:"created_at"`
 }
 
@@ -35,8 +36,8 @@ type ReadLogOption struct {
 	State     int
 	StartTime *time.Time
 	EndTime   *time.Time
-	Skip      uint
-	PerPage   uint
+	Limit     int
+	Offset    int
 }
 
 type Auditer interface {

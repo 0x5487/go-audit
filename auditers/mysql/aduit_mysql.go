@@ -1,12 +1,12 @@
 package mysql
 
 import (
+	"audit"
 	"database/sql"
 	"errors"
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	audit "github.com/jasonsoft/go-audit"
 )
 
 type MySqlAuditer struct {
@@ -20,7 +20,7 @@ func NewMysqlAuditer(db *sql.DB) *MySqlAuditer {
 	}
 }
 
-const insertAuditSQL = "INSERT INTO `audits` (`namespace`, `target_id`, `action`, `actor`, `message`, `state`, `created_at`) VALUES (:namespace, :target_id, :action, :actor, :message, :state, :created_at);"
+const insertAuditSQL = "INSERT INTO `audits` (`namespace`, `target_id`, `action`, `actor`, `message`, `client_ip`, `state`, `created_at`) VALUES (:namespace, :target_id, :action, :actor, :message, :client_ip, :state, :created_at);"
 
 func (ms *MySqlAuditer) Log(event *audit.Event) error {
 	nowUTC := time.Now().UTC()
@@ -44,7 +44,7 @@ const selectAuditActorSQL = `AND actor = :actor `
 const selectAuditStateSQL = `AND state = :state `
 
 const orderByCreatedSQL = `ORDER BY created_at DESC `
-const selectAuditLimitSQL = `LIMIT :skip,:per_page; `
+const selectAuditLimitSQL = `LIMIT :offset,:limit; `
 
 func (ms *MySqlAuditer) ReadLog(option *audit.ReadLogOption) ([]*audit.Event, error) {
 	events := []*audit.Event{}
@@ -61,8 +61,8 @@ func (ms *MySqlAuditer) ReadLog(option *audit.ReadLogOption) ([]*audit.Event, er
 	m := map[string]interface{}{
 		"start_time": option.StartTime,
 		"end_time":   option.EndTime,
-		"skip":       option.Skip,
-		"per_page":   option.PerPage,
+		"offset":     option.Offset,
+		"limit":      option.Limit,
 	}
 	if len(option.Namespace) > 0 {
 		sqlstring += selectAuditNamespaceSQL
@@ -120,8 +120,8 @@ func (ms *MySqlAuditer) TotalCount(option *audit.ReadLogOption) (int, error) {
 	m := map[string]interface{}{
 		"start_time": option.StartTime,
 		"end_time":   option.EndTime,
-		"skip":       option.Skip,
-		"per_page":   option.PerPage,
+		"offset":     option.Offset,
+		"limit":      option.Limit,
 	}
 	if len(option.Namespace) > 0 {
 		sqlstring += selectAuditNamespaceSQL
